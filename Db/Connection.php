@@ -17,7 +17,7 @@ class Connection
     
     const CONN_TIMEOUT = 600;//10分钟
 
-    const MAX_POOL_SIZE = 2;
+    const MAX_POOL_SIZE = 5;
 
     /**
      * 设置数据库类型

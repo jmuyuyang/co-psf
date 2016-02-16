@@ -9,6 +9,8 @@ class Adapter extends \Coroutine\Task{
 
 	protected $_headers;
 
+	const TASK_QUEUE = "HTTP";
+
 	public function __construct($host,$port){
 		$this->_clientKey = $host.":".$port;
 		$this->_swClient = new \swoole_http_client($host,$port);

@@ -5,6 +5,8 @@ class Adapter extends \Coroutine\Task{
     
     const RETRY = 3;
 
+    const TASK_QUEUE = "DB";
+
     protected $_conn;
     protected $_module;
     protected $_config;

@@ -27,6 +27,6 @@ class Queue{
 		if(isset(self::$_queues[$queueName])){
 			return self::$_queues[$queueName]->isEmpty();
 		}
-		return false;
+		return true;
 	}
 }

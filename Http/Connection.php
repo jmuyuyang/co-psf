@@ -25,6 +25,6 @@ class Connection{
 	}
 
 	public static function release($client){
-		self::$_connectionPools[$conn->getClientKey()]->push($conn);
+		self::$_connectionPools[$client->getClientKey()]->push($client);
 	}
 }
