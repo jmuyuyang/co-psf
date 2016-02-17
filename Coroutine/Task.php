@@ -9,12 +9,16 @@ abstract class Task{
 		$this->_coroutine = $coroutine;
 	}
 
-	public function executeCoroutine($resp,$exception = null){
+	public function executeCoroutine($resp = null,$exception = null){
 		if($this->_coroutine){
 			if($exception){
 	            $this->_coroutine->throw($exception);
 	        }else{
-	            $this->_coroutine->send($resp);
+	        	if($resp){
+	        		$this->_coroutine->send($resp);
+	        	}else{
+	        		$this->_coroutine->next();
+	        	}
 	        }
     	}
 	}

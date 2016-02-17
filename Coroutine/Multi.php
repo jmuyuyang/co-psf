@@ -11,10 +11,13 @@ class Multi extends Task{
 
 	public function wrap($coroutine){
 		$this->_callList[] = $coroutine;
-		return \Coroutine::wrap($this->multiCoroutine($coroutine));
+		$taskId = \Coroutine::newTaskId();
+		$coroutine = $this->multiCoroutine($taskId,$coroutine);
+		\Coroutine::register($taskId,$coroutine);
+		return \Coroutine::wrap($coroutine);
 	}
 
-	public function multiCoroutine($coroutine){
+	public function multiCoroutine($taskId,$coroutine){
 		try{
 			$resp = yield from $coroutine;
 			$this->_callRsp[] = $resp;
@@ -22,6 +25,7 @@ class Multi extends Task{
 				$this->executeCoroutine($this->_callRsp);
 				$this->next();
 			}
+			\Coroutine::unregister($taskId);
 		}catch(\Exception $e){
 			$this->executeCoroutine(null,$e);
 			$this->next();

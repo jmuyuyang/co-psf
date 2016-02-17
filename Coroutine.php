@@ -7,8 +7,16 @@ class Coroutine{
 
     protected static $_ioQueue;
 
+    protected static $_maxTaskId = 0;
+
+    protected static $_coroutines = array();
+
     public static function init(){
         self::$_ioQueue = array(self::DB,self::HTTP);
+    }
+
+    public static function task($coroutine){
+        self::wrap(self::_wrap($coroutine));
     }
 
     public static function wrap($coroutine){
@@ -35,6 +43,31 @@ class Coroutine{
             }
         }
         return $coroutine;
+    }
+
+    protected static function _wrap($coroutine){
+        $taskId = self::newTaskId();
+        $coroutine = (function($taskId,$coroutine){
+            $resp = yield from $coroutine;
+            \Coroutine::unregister($taskId);
+        })($taskId,$coroutine);
+        self::register($taskId,$coroutine);
+        return $coroutine;
+    }
+
+    public static function newTaskId(){
+        return ++self::$_maxTaskId;
+    }
+
+    public static function register($taskId,$coroutine){
+        self::$_coroutines[$taskId] = $coroutine;
+    }
+
+    public static function unregister($taskId){
+        unset(self::$_coroutines[$taskId]);
+        if(!self::$_coroutines){
+            self::exit();
+        }
     }
     
     public static function resume($coroutine){
