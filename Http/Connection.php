@@ -15,7 +15,7 @@ class Connection{
 		if(!self::$_connectionPools[$key]->isEmpty()){
 			return self::$_connectionPools[$key]->pop();
 		}else{
-			return new \Http\Adapter($host,$port);
+			return new \Client\Http($host,$port);
 		}
 	}
 

@@ -32,7 +32,7 @@ class Connection
     protected static function _initConnectionPool($module){
         if(!isset(self::$_connnections[$module])){
             self::$_connnections[$module] = array("connection_pools" => new \SplQueue());
-            $adapterClass = "\Db\\" . self::$_adapter . "\Adapter";
+            $adapterClass = "\Client\\" . self::$_adapter;
             for($i=0;$i<self::MAX_POOL_SIZE;$i++){
                 $adapter = new $adapterClass($module);
                 self::$_connnections[$module]['connection_pools']->push($adapter);
@@ -47,7 +47,7 @@ class Connection
             return false;
         }
         $connObj = $connectionPool->pop();
-        if($connObj && $connObj instanceof \Db\Mysql\Adapter){
+        if($connObj && $connObj instanceof \Client\Base){
             if(!$connObj->isConnected()){
                 $connObj->connect();
             }

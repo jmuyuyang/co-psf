@@ -1,13 +1,11 @@
 <?php
 namespace Coroutine;
 
-class Multi extends Task{
+class Multi extends Base{
 
 	protected $_callList = array();
 
 	protected $_callRsp = array();
-
-	const TASK_QUEUE = "multi";
 
 	public function wrap($coroutine){
 		$this->_callList[] = $coroutine;

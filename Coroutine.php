@@ -37,7 +37,7 @@ class Coroutine{
                     $coroutine->throw($e);
                 }
             }else{
-                if($coValue instanceof \Coroutine\Task){
+                if($coValue instanceof \Coroutine\Base){
                     $coValue->setCoroutine($coroutine);
                 }
             }

@@ -1,7 +1,7 @@
 <?php
-namespace Coroutine;
+namespace Client;
 
-abstract class Task{
+abstract class Base{
 
 	protected $_coroutine;
 

@@ -1,7 +1,7 @@
 <?php
-namespace Db\Mysql;
+namespace Client;
 
-class Adapter extends \Coroutine\Task{
+class Mysql extends Base{
     
     const RETRY = 3;
 

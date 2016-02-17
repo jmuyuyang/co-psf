@@ -1,11 +1,9 @@
 <?php
 namespace Coroutine;
 
-class Timer extends Task{
+class Timer extends Base{
 
 	protected $_timerId;
-
-	const TASK_QUEUE = "timer";
 
 	public function after($millisecond){
 		$this->_timerId = swoole_timer_after($millisecond,array($this,"timerCallback"));

@@ -1,7 +1,7 @@
 <?php
-namespace Http;
+namespace Client;
 
-class Adapter extends \Coroutine\Task{
+class Http extends Base{
 
 	protected $_swClient;
 
@@ -31,7 +31,7 @@ class Adapter extends \Coroutine\Task{
 
 	public function httpOnReady($swClient){
 		$this->executeCoroutine($swClient->body);
-		Connection::release($this);
+		\Http\Connection::release($this);
 		$this->next();
 	}
 }
