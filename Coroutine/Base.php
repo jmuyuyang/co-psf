@@ -23,6 +23,10 @@ abstract class Base{
     	}
 	}
 
+	public function unsetCoroutine(){
+		$this->_coroutine = null;
+	}
+
 	public function next(){
 		$coroutine = $this->_coroutine;
 		if($coroutine->valid()){
