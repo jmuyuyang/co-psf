@@ -99,7 +99,7 @@ class Tcp extends Base{
 	}
 
 	public function onClose($cli){
-
+		$this->_status = self::CONNECT_WAIT;
 	}
 
 	public function executeCoroutine($resp = null,$exception = null){
