@@ -14,13 +14,9 @@ class Tcp extends Base{
 	protected $_status;
 
 	const TASK_QUEUE = "TCP";
-	
 	const CONNECT_WAIT = "wait";
-
 	const CONNECT_SUCCESS = "success";
-
 	const CONNECT_FAIL = "fail";
-
 	const CONNECT_SLEEP = "sleep";
 
 	public function __construct($host,$port,$timeout = 0.5){

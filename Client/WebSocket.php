@@ -12,7 +12,7 @@ class WebSocket extends Base{
     const OP_PING     =  9;
     const OP_PONG     = 10;
 
-    const TASK_QUEUE = "TCP";
+    const TASK_QUEUE = "WEBSOCKET";
     const CONNECT_WAIT = "wait";
     const CONNECT_SUCCESS = "success";
     const CONNECT_FAIL = "fail";
