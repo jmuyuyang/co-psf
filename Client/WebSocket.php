@@ -12,7 +12,7 @@ class WebSocket extends Base{
     const OP_PING     =  9;
     const OP_PONG     = 10;
 
-    const TASK_QUEUE = "WEBSOCKET";
+    const TASK_QUEUE = "WebSocket";
     const CONNECT_WAIT = "wait";
     const CONNECT_SUCCESS = "success";
     const CONNECT_FAIL = "fail";
@@ -35,12 +35,23 @@ class WebSocket extends Base{
     const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
     const UserAgent = 'SwooleWebsocketClient';
 
+    public static function factory($host,$port,$path,$timeout){
+        return new self($host,$port,$path,$timeout);
+    }
+
+    public static function new($host,$port,$path = '/', $timeout = 0.5){
+        $taskData = ["client_key" => $host.":".$port,"init_data" => array($host,$port,$path,$timeout)];
+        $client = yield self::TASK_QUEUE => $taskData;
+        $client = yield $client->connect();
+        return $client;
+    }
+
     /**
      * @param string $host
      * @param int $port
      * @param string $path
      */
-    function __construct($host = '127.0.0.1', $port = 8080, $path = '/', $timeout = 0.5)
+    function __construct($host, $port, $path = '/', $timeout = 0.5)
     {
         $this->host = $host;
         $this->port = $port;
@@ -143,10 +154,13 @@ class WebSocket extends Base{
      * Disconnect from server
      */
     public function close($code = 1000){
-        if($this->_status == self::CONNECT_SUCCESS){
-            //$this->send(pack('n',$code),self::OP_CLOSE);
+        if($this->_client->isConnected()){
+            if($this->_status == self::CONNECT_SLEEP){
+                //如果当前client在沉睡中,先唤醒
+                $this->wakeup();
+            }
             $this->_client->close();
-        }   
+        }
         $this->_status = self::CONNECT_WAIT;
     }
 

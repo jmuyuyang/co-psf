@@ -5,7 +5,7 @@ class Mysql extends Base{
     
     const RETRY = 3;
 
-    const TASK_QUEUE = "DB";
+    const TASK_QUEUE = "Mysql";
 
     protected $_conn;
     protected $_module;
@@ -13,13 +13,20 @@ class Mysql extends Base{
 
     protected $_isConnected = false;
 
-    public function __construct($module){
-        $this->_config = array("host" => "127.0.0.1","port" => "3306","user" => "root","password" => "huanleguang123","dbname" => "hlg","module" => "material");
-        $this->_module = $module;
+    public static function factory($module){
+        return new self($module);
     }
 
-    public function getClientKey(){
-        return $this->_module;
+    public static function new($module){
+        $taskData = ["client_key" => $module,"init_data" => array($module)];
+        $client = yield self::TASK_QUEUE => $taskData;
+        $client->connect();
+        return $client;
+    }
+
+    public function __construct($module){
+        $this->_config = array("host" => "127.0.0.1","port" => "3306","user" => "root","password" => "","dbname" => "hlg","module" => "material");
+        $this->_module = $module;
     }
 
     public function connect(){
@@ -46,7 +53,7 @@ class Mysql extends Base{
         $this->_isConnected = false;
     }
 
-    public function queryAsync($sql){
+    public function query($sql){
         for($i=0;$i<self::RETRY;$i++){
             $r = swoole_mysql_query($this->_conn,$sql,array($this,"sqlOnReady"));
             if($r === false){
@@ -61,7 +68,7 @@ class Mysql extends Base{
         return $r;
     }
 
-    public function query(){
+    public function querySync($sql){
         for($i=0;$i<self::RETRY;$i++){
             $r = $this->_conn->query($sql);
             if($r === false){
@@ -103,7 +110,6 @@ class Mysql extends Base{
             }
             $this->executeCoroutine($r,null);
         }
-        \Db\Connection::release($this);
         $this->next();
     }
 }

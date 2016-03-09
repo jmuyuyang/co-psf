@@ -5,23 +5,26 @@ class Http extends Base{
 
 	protected $_swClient;
 
-	protected $_clientKey;
-
 	protected $_headers;
 
 	const TASK_QUEUE = "HTTP";
 
+	public static function factory($host,$port){
+        return new self($host,$port);
+    }
+
+    public static function new($host,$port){
+        $taskData = ["client_key" => $host.":".$port,"init_data" => array($host,$port)];
+        $client = yield self::TASK_QUEUE => $taskData;
+        return $client;
+    }
+
 	public function __construct($host,$port){
-		$this->_clientKey = $host.":".$port;
 		$this->_swClient = new \swoole_http_client($host,$port);
 	}
 
 	public function setHeaders($headers){
 		$this->_headers = $headers;
-	}
-
-	public function getClientKey(){
-		return $this->_clientKey;
 	}
 
 	public function get($uri){
@@ -31,7 +34,6 @@ class Http extends Base{
 
 	public function httpOnReady($swClient){
 		$this->executeCoroutine($swClient->body);
-		\Http\Connection::release($this);
 		$this->next();
 	}
 }

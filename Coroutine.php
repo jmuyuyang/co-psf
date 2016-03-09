@@ -1,10 +1,6 @@
 <?php
 class Coroutine{
 
-    const DB = "DB";
-
-    const HTTP = "HTTP";
-
     protected static $_ioQueue;
 
     protected static $_maxTaskId = 0;
@@ -12,7 +8,7 @@ class Coroutine{
     protected static $_coroutines = array();
 
     public static function init(){
-        self::$_ioQueue = array(self::DB,self::HTTP);
+        self::$_ioQueue = array("Mysql","Http","Tcp","WebSocket");
     }
 
     public static function task($coroutine){
@@ -25,8 +21,7 @@ class Coroutine{
             $coValue = $coroutine->current();
             if($coKey && in_array($coKey,self::$_ioQueue)){
                 try{
-                    $connectionClass = "\\" . $coKey . "\Connection";
-                    $client = $connectionClass::get($coValue);
+                    $client = \Pool::get($coKey,$coValue);
                     if($client){
                         $client->setCoroutine($coroutine);
                         $coroutine->send($client);
@@ -84,7 +79,6 @@ class Coroutine{
             //是否立即执行当前协程
             self::wrap($coroutine);
         }
-        return $coKey;
     }
 
     public static function next($queueName){

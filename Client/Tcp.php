@@ -13,11 +13,22 @@ class Tcp extends Base{
 
 	protected $_status;
 
-	const TASK_QUEUE = "TCP";
+	const TASK_QUEUE = "Tcp";
 	const CONNECT_WAIT = "wait";
 	const CONNECT_SUCCESS = "success";
 	const CONNECT_FAIL = "fail";
 	const CONNECT_SLEEP = "sleep";
+
+	public static function factory($host,$port,$timeout){
+        return new self($host,$port,$timeout);
+    }
+
+    public static function new($host,$port,$timeout = 0.5){
+        $taskData = ["client_key" => $host.":".$port,"init_data" => array($host,$port,$timeout)];
+        $client = yield self::TASK_QUEUE => $taskData;
+        $client = yield $client->connect();
+        return $client;
+    }
 
 	public function __construct($host,$port,$timeout = 0.5){
 		$this->host = $host;
@@ -25,6 +36,17 @@ class Tcp extends Base{
 		$this->timeout = $timeout;
 		$this->_client = new \swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_ASYNC);
 		$this->_status = self::CONNECT_WAIT;
+	}
+
+	public function connect(){
+		if(!$this->_client->isConnected()){
+			$this->_client->on("error",array($this,"onError"));
+			$this->_client->on("connect",array($this,"onConnect"));
+			$this->_client->on("receive",array($this,"onReceive"));
+			$this->_client->on("close",array($this,"onClose"));
+			$this->_client->connect($this->host,$this->port,$this->timeout);
+			return $this;
+		}
 	}
 
 	public function send($data){
@@ -38,17 +60,6 @@ class Tcp extends Base{
 	public function read(){
 		$this->wakeup();
 		return $this;
-	}
-
-	public function connect(){
-		if(!$this->_client->isConnected()){
-			$this->_client->on("error",array($this,"onError"));
-			$this->_client->on("connect",array($this,"onConnect"));
-			$this->_client->on("receive",array($this,"onReceive"));
-			$this->_client->on("close",array($this,"onClose"));
-			$this->_client->connect($this->host,$this->port,$this->timeout);
-			return $this;
-		}
 	}
 
 	public function close(){
