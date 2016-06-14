@@ -98,7 +98,7 @@ class Mysql extends Base{
     public function sqlOnReady($db,$r){
         if($r === false){
             $error = $db->_error;
-            $exception = new \exception($error);
+            $exception = new \Exception($error);
             $this->exceuteCoroutine($r,$exception);
         }else{
             if($r === true){
