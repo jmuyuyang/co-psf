@@ -5,12 +5,22 @@ class Base extends \Coroutine\Base{
 
 	protected $_clientKey;
 
+	protected $_timerId;
+
 	public function setClientKey($clientKey){
 		$this->_clientKey = $clientKey;
 	}
 
 	public function getClientKey(){
 		return $this->_clientKey;
+	}
+
+	public function addTimer($timeout,$callback){
+		$this->_timerId = \swoole_timer_after($timeout*1000,$callback);
+	}
+
+	public function closeTimer(){
+		\swoole_timer_clear($this->_timerId);
 	}
 
 	public function next(){

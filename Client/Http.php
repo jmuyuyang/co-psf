@@ -11,21 +11,24 @@ class Http extends Base{
 
 	protected $_port;
 
+	protected $_timeout;
+
 	const TASK_QUEUE = "Http";
 
-	public static function factory($host,$port = 80){
-        return new self($host,$port);
+	public static function factory($host,$port = 80,$timeout = 10){
+        return new self($host,$port,$timeout);
     }
 
-    public static function new($host,$port = 80){
-        $taskData = ["client_key" => $host.":".$port,"init_data" => array($host,$port)];
+    public static function new($host,$port = 80,$timeout = 10){
+        $taskData = ["client_key" => $host.":".$port,"init_data" => array($host,$port,$timeout)];
         $client = yield self::TASK_QUEUE => $taskData;
         return $client;
     }
 
-	public function __construct($host,$port){
+	public function __construct($host,$port,$timeout){
 		$this->_host = $host;
 		$this->_port = $port;
+		$this->_timeout = $timeout;
 	}
 
 	public function setHeaders($headers){
@@ -51,6 +54,9 @@ class Http extends Base{
 	}
 
 	protected function _request($request){
+		if($this->_timeout){
+			$this->addTimer($this->_timeout,array($this,"onTimeout"));
+		}
 		$this->_headers['host'] = $this->_host;
 		$this->_swClient->setHeaders($this->_headers);
 		switch($request['method']){
@@ -66,6 +72,14 @@ class Http extends Base{
 				$this->_swClient->execute($uri,array($this,"httpOnReady"));
 				break;
 		}
+	}
+
+	public function onTimeout(){
+		$this->_swClient->close();
+		$e = new \Exception("connect to http server:".$this->_host.":".$this->_port." timeout");
+		$this->closeTimer();
+		$this->executeCoroutine($e,null);
+		$this->next();
 	}
 
 	public function httpOnReady($swClient){
