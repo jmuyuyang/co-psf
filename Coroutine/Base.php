@@ -10,7 +10,7 @@ abstract class Base{
 	}
 
 	public function executeCoroutine($resp = null,$exception = null){
-		if($this->_coroutine){
+		if($this->_coroutine && $this->_coroutine->valid()){
 			if($exception){
 	            $this->_coroutine->throw($exception);
 	        }else{

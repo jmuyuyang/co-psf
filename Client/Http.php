@@ -75,10 +75,12 @@ class Http extends Base{
 	}
 
 	public function onTimeout(){
-		$this->_swClient->close();
+		if($this->_swClient->isConnected()){
+			$this->_swClient->close();
+		}
+		$this->clearTimer();
 		$e = new \Exception("connect to http server:".$this->_host.":".$this->_port." timeout");
-		$this->closeTimer();
-		$this->executeCoroutine($e,null);
+		$this->executeCoroutine(null,$e);
 		$this->next();
 	}
 
@@ -88,6 +90,7 @@ class Http extends Base{
 			"headers" => $swClient->headers,
 			"body" => $swClient->body
 		);
+		$this->clearTimer();
 		$this->executeCoroutine($response);
 		$this->next();
 	}

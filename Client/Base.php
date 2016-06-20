@@ -19,7 +19,7 @@ class Base extends \Coroutine\Base{
 		$this->_timerId = \swoole_timer_after($timeout*1000,$callback);
 	}
 
-	public function closeTimer(){
+	public function clearTimer(){
 		\swoole_timer_clear($this->_timerId);
 	}
 
