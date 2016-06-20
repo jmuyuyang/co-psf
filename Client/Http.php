@@ -74,6 +74,14 @@ class Http extends Base{
 		}
 	}
 
+	public function onError(\swoole_http_client $cli){
+        $error = socket_strerror($cli->errCode);
+        $this->clearTimer();
+        $e = new \Exception("connect to http server failed: ".$error);
+        $this->executeCoroutine(null,$e);
+        $this->next();
+    }
+
 	public function onTimeout(){
 		if($this->_swClient->isConnected()){
 			$this->_swClient->close();
