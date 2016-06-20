@@ -7,7 +7,7 @@ class Multi extends Base{
 
 	protected $_callRsp = array();
 
-	public function wrap($coroutine){
+	public function task($coroutine){
 		$this->_callList[] = $coroutine;
 		$taskId = \Coroutine::newTaskId();
 		$coroutine = $this->multiCoroutine($taskId,$coroutine);
