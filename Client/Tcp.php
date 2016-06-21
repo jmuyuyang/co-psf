@@ -35,18 +35,19 @@ class Tcp extends Base{
 		$this->port = $port;
 		$this->timeout = $timeout;
 		$this->_client = new \swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_ASYNC);
-		$this->_status = self::CONNECT_WAIT;
 	}
 
 	public function connect(){
-		if(!$this->_client->isConnected()){
+		if(! $this->_client->isConnected()){
 			$this->_client->on("error",array($this,"onError"));
 			$this->_client->on("connect",array($this,"onConnect"));
 			$this->_client->on("receive",array($this,"onReceive"));
 			$this->_client->on("close",array($this,"onClose"));
+			
+			$this->_status = self::CONNECT_WAIT;
 			$this->_client->connect($this->host,$this->port,$this->timeout);
-			return $this;
 		}
+		return $this;
 	}
 
 	public function send($data){

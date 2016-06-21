@@ -58,6 +58,7 @@ class WebSocket extends Base{
         $this->path = $path;
         $this->timeout = $timeout;
         $this->key = $this->generateToken(self::TOKEN_LENGHT);
+        $this->_client = new \swoole_client(SWOOLE_SOCK_TCP,SWOOLE_SOCK_ASYNC);
     }
 
     /**
@@ -66,14 +67,15 @@ class WebSocket extends Base{
      */
     public function connect()
     {
-        $this->_client = new \swoole_client(SWOOLE_SOCK_TCP,SWOOLE_SOCK_ASYNC);
-        $this->_client->on("connect",array($this,'onConnected'));
-        $this->_client->on("Receive",array($this,"onReceive"));
-        $this->_client->on("close",array($this,"onClose"));
-        $this->_client->on("error",array($this,"onError"));
-        
-        $this->_status = self::CONNECT_WAIT;
-        $this->_client->connect($this->host, $this->port, $this->timeout);
+        if(! $this->_client->isConnected()){
+            $this->_client->on("connect",array($this,'onConnected'));
+            $this->_client->on("Receive",array($this,"onReceive"));
+            $this->_client->on("close",array($this,"onClose"));
+            $this->_client->on("error",array($this,"onError"));
+            
+            $this->_status = self::CONNECT_WAIT;
+            $this->_client->connect($this->host, $this->port, $this->timeout);
+        }
         return $this;
     }
 

@@ -52,6 +52,13 @@ class Http extends Base{
 		}
 		return $this;
 	}
+	
+	public function close(){
+	    if($this->_swClient){
+	        $this->_swClient->close();
+	        $this->_swClient = null;
+	    }
+	}
 
 	protected function _request($request){
 		if($this->_timeout){

@@ -18,28 +18,44 @@ class Mysql extends Base{
     }
 
     public static function new($module){
-        $taskData = ["client_key" => $module,"init_data" => array($module)];
+        $taskData = [
+            "client_key" => $module,
+            "init_data" => array(
+                $module
+            )
+        ];
         $client = yield self::TASK_QUEUE => $taskData;
-        $client->connect();
+        if (! $client->isConnected()) {
+        	$client = yield $client->connect();
+        }
         return $client;
     }
 
     public function __construct($module){
-        $this->_config = array("host" => "127.0.0.1","port" => "3306","user" => "root","password" => "","dbname" => "hlg","module" => "material");
+        $this->_config = \Config::load("db",$module);
         $this->_module = $module;
     }
 
     public function connect(){
-        if(!$this->_conn){
-            $hostKey = $this->_config['host'].":".$this->_config['port'];
-            $conn = new \mysqli($hostKey,$this->_config['user'],$this->_config['password'],$this->_config['dbname']);
-            if(mysqli_connect_errno()){
-                throw new \exception("mysql connect failed: ".mysqli_connect_errno());
-            }
-            $this->_conn = $conn;
-            $this->_isConnected = true;
+        if(!$this->_conn || !$this->_isConnected){
+            $this->_conn = new \swoole_mysql();
+            $this->_conn->connect($this->_config,array($this,"onConnect"));
         }
-        return $this->_conn;
+        return $this;
+    }
+    
+    public function onConnect($conn,$r){
+        if($r === false){
+            if($conn->connect_error == 2013 || $conn->connect_error == 2006){
+                $this->reconnect();
+                return;
+            }
+            $exception = new \Exception($conn->connect_error);
+            $this->exceuteCoroutine(null,$exception);
+        }
+        $this->_conn = $conn;
+        $this->_isConnected = true;
+        $this->executeCoroutine($this);
     }
 
     public function reconnect(){
@@ -48,39 +64,16 @@ class Mysql extends Base{
     }
 
     public function close(){
-        $this->_conn->close();
+        if($this->_isConnected){
+            $this->_conn->close();
+        }
         $this->_conn = null;
         $this->_isConnected = false;
     }
-
+    
     public function query($sql){
-        for($i=0;$i<self::RETRY;$i++){
-            $r = swoole_mysql_query($this->_conn,$sql,array($this,"sqlOnReady"));
-            if($r === false){
-                if ($this->_conn->errno == 2013 or $this->_conn->errno == 2006) {
-                    if($this->reconnect()){
-                        continue;
-                    }
-                }
-            }
-            break;
-        }
-        return $r;
-    }
-
-    public function querySync($sql){
-        for($i=0;$i<self::RETRY;$i++){
-            $r = $this->_conn->query($sql);
-            if($r === false){
-                if ($this->_conn->errno == 2013 or $this->_conn->errno == 2006) {
-                    if($this->reconnect()){
-                        continue;
-                    }
-                }
-            }
-            break;
-        }
-        return $r;
+        $this->_conn->query($sql,array($this,"sqlOnReady"));
+        return $this;
     }
 
     public function module(){
@@ -97,15 +90,17 @@ class Mysql extends Base{
 
     public function sqlOnReady($db,$r){
         if($r === false){
-            $error = $db->_error;
-            $exception = new \Exception($error);
-            $this->exceuteCoroutine($r,$exception);
+            if($db->errno == 2013 || $db->errno == 2006){
+                $this->close();
+            }
+            $exception = new \Exception($db->error,$db->errno);
+            $this->exceuteCoroutine(null,$exception);
         }else{
             if($r === true){
-                if($db->_insert_id){
-                    $r = $db->_insert_id;
+                if($db->insert_id){
+                    $r = $db->insert_id;
                 }else{
-                    $r = $db->_affected_rows;
+                    $r = $db->affected_rows;
                 }
             }
             $this->executeCoroutine($r,null);

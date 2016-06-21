@@ -2,12 +2,15 @@
 class Coroutine{
 
     protected static $_ioQueue;
+    
+    protected static $_mode; //server 为swoole_server模式,cli为普通cli模式
 
     protected static $_maxTaskId = 0;
 
     protected static $_coroutines = array();
 
-    public static function init(){
+    public static function init($mode = "cli"){
+        self::$_mode = $mode;
         self::$_ioQueue = array("Mysql","Http","Tcp","WebSocket");
     }
 
@@ -93,7 +96,10 @@ class Coroutine{
     }
 
     public static function exit(){
-    	swoole_event_exit();
+        if(self::$_mode == "cli"){
+           //swoole_server模式下不进程event_exit
+    	   swoole_event_exit();
+        }
     }
 }
 ?>
