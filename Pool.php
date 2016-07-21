@@ -3,7 +3,7 @@ class Pool{
 
 	protected static $_pools = array();
 
-	public static function init($adapter,$maxPoolSize = 0){
+	public static function init($adapter,$maxPoolSize = 1){
 		self::$_pools[$adapter] = new \Connection($adapter,$maxPoolSize);
 	}
 

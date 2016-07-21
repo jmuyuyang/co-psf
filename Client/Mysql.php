@@ -51,7 +51,7 @@ class Mysql extends Base{
                 return;
             }
             $exception = new \Exception($conn->connect_error);
-            $this->exceuteCoroutine(null,$exception);
+            $this->executeCoroutine(null,$exception);
         }
         $this->_conn = $conn;
         $this->_isConnected = true;
@@ -94,7 +94,7 @@ class Mysql extends Base{
                 $this->close();
             }
             $exception = new \Exception($db->error,$db->errno);
-            $this->exceuteCoroutine(null,$exception);
+            $this->executeCoroutine(null,$exception);
         }else{
             if($r === true){
                 if($db->insert_id){
