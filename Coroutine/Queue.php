@@ -18,6 +18,10 @@ class Queue extends Base
         $this->_dataQueue = new \SplQueue();
     }
 
+    /**
+     * pop 队列数据
+     * @return mixed
+     */
     public function pop()
     {
         $this->_waitRead = true;
@@ -31,15 +35,21 @@ class Queue extends Base
         }
     }
 
+    /**
+     * push 队列数据
+     * @param unknown $data
+     */
     public function push($data)
     {
-        $this->_dataQueue->push($data);
-        if ($this->_waitRead) {
-            $this->executeCoroutine(true);
-            if($this->_coroutine->valid()){
-                $this->next();
-            }else{
-                $this->_dataQueue = null;
+        if($this->_dataQueue){
+            $this->_dataQueue->push($data);
+            if ($this->_waitRead) {
+                $this->executeCoroutine(true);
+                if($this->_coroutine->valid()){
+                    $this->next();
+                }else{
+                    $this->_dataQueue = null;
+                }
             }
         }
     }
