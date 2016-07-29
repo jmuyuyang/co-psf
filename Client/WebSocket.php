@@ -111,6 +111,8 @@ class WebSocket extends Base{
                             //当前中断不是websocket io中断或者buffer数据为空
                             break;
                         }
+                    }else{
+                        break;
                     }
                 }else{
                     $packageLength = $this->getPackageLength($this->_buffer);
